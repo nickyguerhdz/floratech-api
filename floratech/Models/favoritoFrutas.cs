@@ -7,35 +7,38 @@ namespace floratech.Models
     using System.Data.Entity.Spatial;
 
     [Table("favoritos")]
-    public partial class favorito
+    public partial class favoritoFrutas
     {
-        [Required]
         public int id { get; set; }
 
-        [Required]
         public int usuario_id { get; set; }
 
         [Required]
+        [StringLength(10)]
+        public string tipo { get; set; }
+
+        [Required]
         [StringLength(100)]
-        public string especie { get; set; }
+        public string nombre_fruta { get; set; }
 
         [Required]
         [StringLength(100)]
         public string genero { get; set; }
 
         [Required]
-        public decimal carbo { get; set; }
+        [StringLength(100)]
+        public string especie { get; set; }
 
-        [Required]
+        public int calorias { get; set; }
+
+        public decimal carbohidratos { get; set; }
+
         public decimal proteina { get; set; }
 
-        [Required]
         public decimal grasa { get; set; }
 
-        [Required]
         public decimal azucar { get; set; }
 
-        [Required]
         public virtual usuario usuario { get; set; }
     }
 }

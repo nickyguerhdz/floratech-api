@@ -11,7 +11,7 @@ namespace floratech.Models
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public usuario()
         {
-            favoritos = new HashSet<favorito>();
+            favoritos = new HashSet<favoritoFrutas>();
         }
 
         public int id { get; set; }
@@ -34,6 +34,6 @@ namespace floratech.Models
         public string contrasena { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<favorito> favoritos { get; set; }
+        public virtual ICollection<favoritoFrutas> favoritos { get; set; }
     }
 }

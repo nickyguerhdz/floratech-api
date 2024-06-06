@@ -8,36 +8,44 @@ namespace floratech.Models
     public partial class Model1 : DbContext
     {
         public Model1()
-            : base("name=Model1")
+            : base("name=Model11")
         {
         }
 
-        public virtual DbSet<favorito> favoritos { get; set; }
+        public virtual DbSet<favoritoFrutas> favoritos { get; set; }
         public virtual DbSet<usuario> usuarios { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<favorito>()
-                .Property(e => e.especie)
+            modelBuilder.Entity<favoritoFrutas>()
+                .Property(e => e.tipo)
                 .IsUnicode(false);
 
-            modelBuilder.Entity<favorito>()
+            modelBuilder.Entity<favoritoFrutas>()
+                .Property(e => e.nombre_fruta)
+                .IsUnicode(false);
+
+            modelBuilder.Entity<favoritoFrutas>()
                 .Property(e => e.genero)
                 .IsUnicode(false);
 
-            modelBuilder.Entity<favorito>()
-                .Property(e => e.carbo)
+            modelBuilder.Entity<favoritoFrutas>()
+                .Property(e => e.especie)
+                .IsUnicode(false);
+
+            modelBuilder.Entity<favoritoFrutas>()
+                .Property(e => e.carbohidratos)
                 .HasPrecision(5, 2);
 
-            modelBuilder.Entity<favorito>()
+            modelBuilder.Entity<favoritoFrutas>()
                 .Property(e => e.proteina)
                 .HasPrecision(5, 2);
 
-            modelBuilder.Entity<favorito>()
+            modelBuilder.Entity<favoritoFrutas>()
                 .Property(e => e.grasa)
                 .HasPrecision(5, 2);
 
-            modelBuilder.Entity<favorito>()
+            modelBuilder.Entity<favoritoFrutas>()
                 .Property(e => e.azucar)
                 .HasPrecision(5, 2);
 

@@ -10,10 +10,12 @@ using System.Web.Http;
 using System.Web.Http.Description;
 using floratech.Models;
 
+
 namespace floratech.Controllers
 {
     public class usuariosController : ApiController
     {
+
         private Model1 db = new Model1();
 
         // GET: api/usuarios
@@ -35,21 +37,39 @@ namespace floratech.Controllers
             return Ok(usuario);
         }
 
+        [HttpGet]
+        [Route("api/usuarios/GetTotalUsers")]
+        public int GetTotalUsers()
+        {
+            return db.usuarios.Count();
+        }
+
+        [HttpPost]
+        [Route("api/usuarios/login")]
+        public IHttpActionResult Login(usuario user)
+        {
+            if (db.usuarios.Any(x => x.usuario1 == user.usuario1 && x.contrasena == user.contrasena))
+            {
+                user = db.usuarios.Where(x => x.usuario1 == user.usuario1 && x.contrasena == user.contrasena).FirstOrDefault();
+                return Ok(user);
+            }
+            else
+            {
+                return NotFound();
+            }
+        }
+
         // PUT: api/usuarios/5
         [ResponseType(typeof(void))]
         public IHttpActionResult Putusuario(int id, usuario usuario)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+            var findUsuario = db.usuarios.Where(x => x.id == id).FirstOrDefault();
 
-            if (id != usuario.id)
-            {
-                return BadRequest();
-            }
+            findUsuario.nombre = usuario.nombre;
+            findUsuario.apellido = usuario.apellido;
+            findUsuario.usuario1 = usuario.usuario1;
+            findUsuario.contrasena = usuario.contrasena;
 
-            db.Entry(usuario).State = EntityState.Modified;
 
             try
             {
@@ -67,7 +87,7 @@ namespace floratech.Controllers
                 }
             }
 
-            return StatusCode(HttpStatusCode.NoContent);
+            return Ok(findUsuario);
         }
 
         // POST: api/usuarios

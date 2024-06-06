@@ -17,16 +17,16 @@ namespace floratech.Controllers
         private Model1 db = new Model1();
 
         // GET: api/favoritos
-        public IQueryable<favorito> Getfavoritos()
+        public IQueryable<favoritoFrutas> Getfavoritos()
         {
             return db.favoritos;
         }
 
         // GET: api/favoritos/5
-        [ResponseType(typeof(favorito))]
+        [ResponseType(typeof(favoritoFrutas))]
         public IHttpActionResult Getfavorito(int id)
         {
-            favorito favorito = db.favoritos.Find(id);
+            favoritoFrutas favorito = db.favoritos.Find(id);
             if (favorito == null)
             {
                 return NotFound();
@@ -37,7 +37,7 @@ namespace floratech.Controllers
 
         // PUT: api/favoritos/5
         [ResponseType(typeof(void))]
-        public IHttpActionResult Putfavorito(int id, favorito favorito)
+        public IHttpActionResult Putfavorito(int id, favoritoFrutas favorito)
         {
             if (!ModelState.IsValid)
             {
@@ -71,8 +71,8 @@ namespace floratech.Controllers
         }
 
         // POST: api/favoritos
-        [ResponseType(typeof(favorito))]
-        public IHttpActionResult Postfavorito(favorito favorito)
+        [ResponseType(typeof(favoritoFrutas))]
+        public IHttpActionResult Postfavorito(favoritoFrutas favorito)
         {
             if (!ModelState.IsValid)
             {
@@ -86,10 +86,10 @@ namespace floratech.Controllers
         }
 
         // DELETE: api/favoritos/5
-        [ResponseType(typeof(favorito))]
+        [ResponseType(typeof(favoritoFrutas))]
         public IHttpActionResult Deletefavorito(int id)
         {
-            favorito favorito = db.favoritos.Find(id);
+            favoritoFrutas favorito = db.favoritos.Find(id);
             if (favorito == null)
             {
                 return NotFound();
