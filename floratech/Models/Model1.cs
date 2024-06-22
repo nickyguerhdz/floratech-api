@@ -12,67 +12,17 @@ namespace floratech.Models
         {
         }
 
-        public virtual DbSet<favoritosFruta> favoritosFrutas { get; set; }
-        public virtual DbSet<favoritosPlaga> favoritosPlagas { get; set; }
-        public virtual DbSet<favoritosPlanta> favoritosPlantas { get; set; }
+        public virtual DbSet<favorito> favoritos { get; set; }
         public virtual DbSet<usuario> usuarios { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<favoritosFruta>()
+            modelBuilder.Entity<favorito>()
                 .Property(e => e.tipo)
                 .IsUnicode(false);
 
-            modelBuilder.Entity<favoritosFruta>()
-                .Property(e => e.nombre_fruta)
-                .IsUnicode(false);
-
-            modelBuilder.Entity<favoritosFruta>()
-                .Property(e => e.genero)
-                .IsUnicode(false);
-
-            modelBuilder.Entity<favoritosFruta>()
-                .Property(e => e.especie)
-                .IsUnicode(false);
-
-            modelBuilder.Entity<favoritosFruta>()
-                .Property(e => e.carbohidratos)
-                .HasPrecision(5, 2);
-
-            modelBuilder.Entity<favoritosFruta>()
-                .Property(e => e.proteina)
-                .HasPrecision(5, 2);
-
-            modelBuilder.Entity<favoritosFruta>()
-                .Property(e => e.grasa)
-                .HasPrecision(5, 2);
-
-            modelBuilder.Entity<favoritosFruta>()
-                .Property(e => e.azucar)
-                .HasPrecision(5, 2);
-
-            modelBuilder.Entity<favoritosPlaga>()
-                .Property(e => e.nombre_plaga)
-                .IsUnicode(false);
-
-            modelBuilder.Entity<favoritosPlaga>()
-                .Property(e => e.tratamiento)
-                .IsUnicode(false);
-
-            modelBuilder.Entity<favoritosPlanta>()
-                .Property(e => e.nombre_planta)
-                .IsUnicode(false);
-
-            modelBuilder.Entity<favoritosPlanta>()
-                .Property(e => e.especie)
-                .IsUnicode(false);
-
-            modelBuilder.Entity<favoritosPlanta>()
-                .Property(e => e.genero)
-                .IsUnicode(false);
-
-            modelBuilder.Entity<favoritosPlanta>()
-                .Property(e => e.riego)
+            modelBuilder.Entity<favorito>()
+                .Property(e => e.elemento)
                 .IsUnicode(false);
 
             modelBuilder.Entity<usuario>()
@@ -92,19 +42,11 @@ namespace floratech.Models
                 .IsUnicode(false);
 
             modelBuilder.Entity<usuario>()
-                .HasMany(e => e.favoritosFrutas)
-                .WithRequired(e => e.usuario)
-                .HasForeignKey(e => e.usuario_id)
-                .WillCascadeOnDelete(false);
+                .Property(e => e.pic)
+                .IsUnicode(false);
 
             modelBuilder.Entity<usuario>()
-                .HasMany(e => e.favoritosPlagas)
-                .WithRequired(e => e.usuario)
-                .HasForeignKey(e => e.usuario_id)
-                .WillCascadeOnDelete(false);
-
-            modelBuilder.Entity<usuario>()
-                .HasMany(e => e.favoritosPlantas)
+                .HasMany(e => e.favoritos)
                 .WithRequired(e => e.usuario)
                 .HasForeignKey(e => e.usuario_id)
                 .WillCascadeOnDelete(false);

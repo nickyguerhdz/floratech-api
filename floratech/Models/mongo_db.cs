@@ -70,7 +70,7 @@ namespace floratech.Models
         }
 
         // Método para confirmar la conexión con la base de datos haciendo ping
-        public void ClientPing(MongoClient client, string databaseName)
+        public string ClientPing(MongoClient client, string databaseName)
         {
             string texto = "";
             //Propósito: Comprobar si nuestras credenciales o información está correcta y se puede hacer ping de conexión

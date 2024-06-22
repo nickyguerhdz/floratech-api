@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
+using System.Data.Entity.Validation;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -65,6 +66,7 @@ namespace floratech.Controllers
         {
             var findUsuario = db.usuarios.Where(x => x.id == id).FirstOrDefault();
 
+            findUsuario.pic = usuario.pic;
             findUsuario.nombre = usuario.nombre;
             findUsuario.apellido = usuario.apellido;
             findUsuario.usuario1 = usuario.usuario1;
@@ -75,6 +77,37 @@ namespace floratech.Controllers
             {
                 db.SaveChanges();
             }
+
+
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!usuarioExists(id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return Ok(findUsuario);
+        }
+
+        [HttpPut]
+        [Route("api/usuariosPic/{id}")]
+        public IHttpActionResult PutPicUsuario(int id, usuario usuario)
+        {
+            var findUsuario = db.usuarios.Where(x => x.id == id).FirstOrDefault();
+
+            findUsuario.pic = usuario.pic;;
+
+            try
+            {
+                db.SaveChanges();
+            }
+
+
             catch (DbUpdateConcurrencyException)
             {
                 if (!usuarioExists(id))
