@@ -1,220 +1,190 @@
-﻿using System;
+﻿using floratech.Model;
+using floratech.Connection;
+using MongoDB.Bson;
+using MongoDB.Driver;
+using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
+using System.Threading.Tasks;
 using System.Web.Http;
+using System.Web.Http.Cors;
 using System.Web.Http.Description;
-using floratech.Models;
 
-namespace floratech.Controllers
+[EnableCors("*", "*", "*")]
+[RoutePrefix("api/favoritos")]
+public class FavoritosController : ApiController
 {
-    public class favoritosController : ApiController
+    private readonly IMongoCollection<Favoritos> _favoritosCollection;
+
+    private async Task<int> GetNextFavIdAsync()
     {
-        // GET: favoritos
-        private Model1 db = new Model1();
+        var sort = Builders<Favoritos>.Sort.Descending(u => u.favId);
+        var highestFavId = await _favoritosCollection.Find(_ => true).Sort(sort).Limit(1).FirstOrDefaultAsync();
 
-        // GET: api/favoritos
-        public IQueryable<favorito> Getfavoritos()
+        return highestFavId != null ? highestFavId.favId + 1 : 1;
+    }
+
+    public FavoritosController()
+    {
+        mongo_db db_mongo = new mongo_db("floratech", "floratech1", "floratech-db", "maincluster.ixylg4p.mongodb.net/");
+
+        _favoritosCollection = db_mongo.mongoDatabase.GetCollection<Favoritos>("favoritos");
+    }
+
+    // GET api/favoritos/nextFavId
+    [HttpGet]
+    [Route("nextFavId")]
+    public async Task<IHttpActionResult> GetNextFavId()
+    {
+        try
         {
-            return db.favoritos;
+            int nextFavId = await GetNextFavIdAsync();
+            return Ok(nextFavId);
         }
-
-        // GET: api/favoritos/5
-        [ResponseType(typeof(favorito))]
-        public IHttpActionResult Getfavoritos(int id)
+        catch (Exception ex)
         {
-            favorito favoritos = db.favoritos.Find(id);
-            if (favoritos == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(favoritos);
-        }
-
-        [HttpGet]
-        [Route("api/favoritos/GetTotalFavoritos")]
-        public int GetTotalFavoritos()
-        {
-            return db.favoritos.Count();
-        }
-
-        // GET: api/favoritos/byuser/1
-        [HttpGet]
-        [Route("api/favoritos/byuser/{usuario_id}")]
-        [ResponseType(typeof(IEnumerable<favorito>))]
-        public IHttpActionResult GetfavoritosByUsuarioId(int usuario_id)
-        {
-            var favoritos = db.favoritos.Where(f => f.usuario_id == usuario_id).ToList();
-
-            if (!favoritos.Any())
-            {
-                return Ok(0);
-            }
-
-            return Ok(favoritos);
-        }
-
-        [HttpGet]
-        [Route("api/favoritos/byuser/{usuario_id}/frutas")]
-        [ResponseType(typeof(IEnumerable<favorito>))]
-        public IHttpActionResult GetFavoritosFrutasByUsuarioId(int usuario_id)
-        {
-            var favoritos = db.favoritos.Where(f => f.usuario_id == usuario_id && f.tipo == "Fruta").ToList();
-
-            if (!favoritos.Any())
-            {
-                return Ok(0);
-            }
-
-            return Ok(favoritos);
-        }
-
-        [HttpGet]
-        [Route("api/favoritos/byuser/{usuario_id}/plantas")]
-        [ResponseType(typeof(IEnumerable<favorito>))]
-        public IHttpActionResult GetFavoritosPlantasByUsuarioId(int usuario_id)
-        {
-            var favoritos = db.favoritos.Where(f => f.usuario_id == usuario_id && f.tipo == "Planta").ToList();
-
-            if (!favoritos.Any())
-            {
-                return Ok(0);
-            }
-
-            return Ok(favoritos);
-        }
-
-        [HttpGet]
-        [Route("api/favoritos/byuser/{usuario_id}/plagas")]
-        [ResponseType(typeof(IEnumerable<favorito>))]
-        public IHttpActionResult GetFavoritosPlagasByUsuarioId(int usuario_id)
-        {
-            var favoritos = db.favoritos.Where(f => f.usuario_id == usuario_id && f.tipo == "Plaga").ToList();
-
-            if (!favoritos.Any())
-            {
-                return Ok(0);
-            }
-
-            return Ok(favoritos);
-        }
-
-
-        [HttpPost]
-        [Route("api/favoritos/getId")]
-        [ResponseType(typeof(int?))]
-        public IHttpActionResult GetFavoritoId(favorito favorito)
-        {
-            var existingFavorito = db.favoritos
-                .Where(f => f.usuario_id == favorito.usuario_id &&
-                            f.tipo == favorito.tipo &&
-                            f.id_elementoAPI == favorito.id_elementoAPI &&
-                            f.elemento == favorito.elemento)
-                .Select(f => f.id)
-                .FirstOrDefault();
-
-            if (existingFavorito == 0)
-            {
-                return NotFound();
-            }
-
-            return Ok(existingFavorito);
-        }
-
-
-        // POST: api/favoritos
-        [ResponseType(typeof(favorito))]
-        public IHttpActionResult Postfavoritos(favorito favoritos)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            db.favoritos.Add(favoritos);
-            db.SaveChanges();
-
-            return CreatedAtRoute("DefaultApi", new { id = favoritos.id }, favoritos);
-        }
-
-        // PUT: api/favoritos/5
-        [ResponseType(typeof(void))]
-        public IHttpActionResult Putfavoritos(int id, favorito favoritos)
-        {
-            var findFavoritos = db.favoritos.Where(x => x.id == id).FirstOrDefault();
-
-            if (findFavoritos == null)
-            {
-                return NotFound();
-            }
-
-            findFavoritos.usuario_id = favoritos.usuario_id;
-            findFavoritos.tipo = favoritos.tipo;
-            findFavoritos.id_elementoAPI = favoritos.id_elementoAPI;
-            findFavoritos.elemento = favoritos.elemento;
-
-            try
-            {
-                db.SaveChanges();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!favoritosExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return Ok(findFavoritos);
-        }
-
-        // DELETE: api/favoritos/5
-        [ResponseType(typeof(favorito))]
-        public IHttpActionResult Deletefavoritos(int id)
-        {
-            favorito favoritos = db.favoritos.Find(id);
-            if (favoritos == null)
-            {
-                return NotFound();
-            }
-
-            db.favoritos.Remove(favoritos);
-            db.SaveChanges();
-
-            return Ok(favoritos);
-        }
-
-        [HttpPost]
-        [Route("api/favoritos/check")]
-        [ResponseType(typeof(bool))]
-        public IHttpActionResult CheckFavorito(favorito favorito)
-        {
-            var exists = db.favoritos.Any(f => f.usuario_id == favorito.usuario_id && f.tipo == favorito.tipo && f.id_elementoAPI == favorito.id_elementoAPI && f.elemento == favorito.elemento);
-            return Ok(exists);
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                db.Dispose();
-            }
-            base.Dispose(disposing);
-        }
-
-        private bool favoritosExists(int id)
-        {
-            return db.favoritos.Count(e => e.id == id) > 0;
+            return InternalServerError(ex);
         }
     }
 
+    // GET api/favoritos
+    [HttpGet]
+    [Route("")]
+    public async Task<IEnumerable<Favoritos>> Get()
+    {
+        return await _favoritosCollection.Find(new BsonDocument()).ToListAsync();
+    }
+
+    // GET api/favoritos/{userId}
+    [HttpGet]
+    [Route("{userId}")]
+    public async Task<IHttpActionResult> GetHistorialByUserId(int userId)
+    {
+        var favorito = await _favoritosCollection.Find(x => x.userId == userId).ToListAsync();
+        if (favorito.Count == 0)
+        {
+            return Ok(0);
+        }
+        return Ok(favorito);
+    }
+
+    // GET api/favoritos/{userId}/frutas
+    [HttpGet]
+    [Route("{userId}/frutas")]
+    public async Task<IHttpActionResult> GetFrutasFavByUserId(int userId)
+    {
+        var favorito = await _favoritosCollection.Find(x => x.userId == userId && x.tipo == "Fruta").ToListAsync();
+        if (favorito.Count == 0)
+        {
+            return Ok(0);
+        }
+        return Ok(favorito);
+    }
+
+    // GET api/favoritos/{userId}/plantas
+    [HttpGet]
+    [Route("{userId}/plantas")]
+    public async Task<IHttpActionResult> GetPlantasFavByUserId(int userId)
+    {
+        var favorito = await _favoritosCollection.Find(x => x.userId == userId && x.tipo == "Planta").ToListAsync();
+        if (favorito.Count == 0)
+        {
+            return Ok(0);
+        }
+        return Ok(favorito);
+    }
+
+    // GET api/favoritos/{userId}/plagas
+    [HttpGet]
+    [Route("{userId}/plagas")]
+    public async Task<IHttpActionResult> GetPlagasFavByUserId(int userId)
+    {
+        var favorito = await _favoritosCollection.Find(x => x.userId == userId && x.tipo == "Plaga").ToListAsync();
+        if (favorito.Count == 0)
+        {
+            return Ok(0);
+        }
+        return Ok(favorito);
+    }
+
+    [HttpGet]
+    [Route("all")]
+    public async Task<IHttpActionResult> GetAllFavoritos()
+    {
+        var favoritos = await _favoritosCollection
+            .Find(_ => true)
+            .ToListAsync();
+
+        var totalFavoritos = favoritos.Count;
+
+        return Ok(new
+        {
+            favoritos,
+            totalFavoritos
+        });
+    }
+
+    // POST api/favoritos
+    [HttpPost]
+    [Route("")]
+    public async Task<IHttpActionResult> Post([FromBody] Favoritos favorito)
+    {
+        if (favorito == null)
+        {
+            return BadRequest("Favorito incompleto.");
+        }
+
+        favorito.favId = await GetNextFavIdAsync();
+
+        await _favoritosCollection.InsertOneAsync(favorito);
+        return Ok(favorito);
+    }
+
+    // POST api/favoritos/check (Revisar si el fav existe)
+    [HttpPost]
+    [Route("check")]
+    public async Task<IHttpActionResult> CheckFavorito([FromBody] Favoritos favorito)
+    {
+        var favoritoEncontrado = await _favoritosCollection.Find(x => x.userId == favorito.userId &&
+                                                                      x.tipo == favorito.tipo &&
+                                                                      x.id_elemento == favorito.id_elemento &&
+                                                                      x.elemento == favorito.elemento)
+                                                                .FirstOrDefaultAsync();
+
+        bool exists = favoritoEncontrado != null;
+        int favId = exists ? favoritoEncontrado.favId : 0;
+
+        var responseObj = new
+        {
+            Exists = exists,
+            FavId = favId
+        };
+
+        return Ok(responseObj);
+    }
+
+    // POST api/favoritos/checkId (Revisar si el favId existe)
+    [HttpPost]
+    [Route("checkId")]
+    [ResponseType(typeof(bool))]
+    public async Task<IHttpActionResult> GetFavoritoId([FromBody] Favoritos favorito)
+    {
+        var existingFavorito = await _favoritosCollection.Find(x => x.favId == favorito.favId && x.userId == favorito.userId && x.tipo == favorito.tipo && x.id_elemento == favorito.id_elemento && x.elemento == favorito.elemento).FirstOrDefaultAsync();
+
+        return Ok(existingFavorito);
+    }
+
+    // DELETE api/favoritos/{favId} (Eliminar por favId)
+    [HttpDelete]
+    [Route("{favId}")]
+    public async Task<IHttpActionResult> Delete(int favId)
+    {
+        var result = await _favoritosCollection.DeleteOneAsync(x => x.favId == favId);
+        if (result.IsAcknowledged && result.DeletedCount > 0)
+        {
+            return Ok("Favorito eliminado correctamente.");
+        }
+        return Ok("Favorito inexistente.");
+    }
 }
+
+

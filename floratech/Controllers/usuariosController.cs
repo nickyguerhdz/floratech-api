@@ -1,171 +1,183 @@
-﻿using System;
+﻿using floratech.Model;
+using floratech.Connection;
+using MongoDB.Bson;
+using MongoDB.Driver;
+using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
-using System.Data.Entity.Validation;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
+using System.Threading.Tasks;
 using System.Web.Http;
-using System.Web.Http.Description;
-using floratech.Models;
+using System.Web.Http.Cors;
 
-
-namespace floratech.Controllers
+[EnableCors("*", "*", "*")]
+[RoutePrefix("api/usuarios")]
+public class UsuariosController : ApiController
 {
-    public class usuariosController : ApiController
+    private readonly IMongoCollection<Usuarios> _usuariosCollection;
+
+    private async Task<int> GetNextUserIdAsync()
     {
+        var sort = Builders<Usuarios>.Sort.Descending(u => u.userId);
+        var highestUserId = await _usuariosCollection.Find(_ => true).Sort(sort).Limit(1).FirstOrDefaultAsync();
 
-        private Model1 db = new Model1();
+        return highestUserId != null ? highestUserId.userId + 1 : 1;
+    }
 
-        // GET: api/usuarios
-        public IQueryable<usuario> Getusuarios()
+
+    public UsuariosController()
+    {
+        mongo_db db_mongo = new mongo_db("floratech", "floratech1", "floratech-db", "maincluster.ixylg4p.mongodb.net/");
+
+        _usuariosCollection = db_mongo.mongoDatabase.GetCollection<Usuarios>("usuarios");
+    }
+
+    // GET api/usuarios
+    [HttpGet]
+    [Route("")]
+    public async Task<IEnumerable<Usuarios>> Get()
+    {
+        return await _usuariosCollection.Find(new BsonDocument()).ToListAsync();
+    }
+
+    // GET api/usuarios/{userId}
+    [HttpGet]
+    [Route("{userId}")]
+    public async Task<IHttpActionResult> GetHistorialByUserId(int userId)
+    {
+        var usuario = await _usuariosCollection.Find(x => x.userId == userId).FirstOrDefaultAsync();
+        if (usuario == null)
         {
-            return db.usuarios;
+            return Ok("Usuario vacío.");
+        }
+        return Ok(usuario);
+    }
+
+    [HttpGet]
+    [Route("all")]
+    public async Task<IHttpActionResult> GetAllHistorial()
+    {
+        var usuarios = await _usuariosCollection
+            .Find(_ => true)
+            .ToListAsync();
+
+        var totalUsuarios = usuarios.Count;
+
+        return Ok(new
+        {
+            usuarios,
+            totalUsuarios
+        });
+    }
+
+    // POST api/usuarios
+    [HttpPost]
+    [Route("")]
+    public async Task<IHttpActionResult> Post([FromBody] Usuarios usuario)
+    {
+        if (usuario == null)
+        {
+            return BadRequest("Usuario no proporcionado.");
         }
 
-        // GET: api/usuarios/5
-        [ResponseType(typeof(usuario))]
-        public IHttpActionResult Getusuario(int id)
-        {
-            usuario usuario = db.usuarios.Find(id);
-            if (usuario == null)
-            {
-                return NotFound();
-            }
+        usuario.userId = await GetNextUserIdAsync();
 
-            return Ok(usuario);
+        await _usuariosCollection.InsertOneAsync(usuario);
+        return Ok(usuario);
+    }
+
+    // POST api/usuarios/login
+    [HttpPost]
+    [Route("login")]
+    public async Task<IHttpActionResult> Login([FromBody] Usuarios usuario)
+    {
+        if (usuario == null || string.IsNullOrEmpty(usuario.nombre_usuario) || string.IsNullOrEmpty(usuario.contrasena))
+        {
+            return Ok("Usuario o contraseña no proporcionados.");
         }
 
-        [HttpGet]
-        [Route("api/usuarios/GetTotalUsers")]
-        public int GetTotalUsers()
+        var userFilter = Builders<Usuarios>.Filter.Eq(u => u.nombre_usuario, usuario.nombre_usuario);
+        var user = await _usuariosCollection.Find(userFilter).FirstOrDefaultAsync();
+
+        if (user == null)
         {
-            return db.usuarios.Count();
+            return Ok("Usuario incorrecto.");
         }
 
-        [HttpPost]
-        [Route("api/usuarios/login")]
-        public IHttpActionResult Login(usuario user)
+        var passwordFilter = Builders<Usuarios>.Filter.Eq(u => u.nombre_usuario, usuario.nombre_usuario) &
+                             Builders<Usuarios>.Filter.Eq(u => u.contrasena, usuario.contrasena);
+        var login = await _usuariosCollection.Find(passwordFilter).FirstOrDefaultAsync();
+
+        if (login == null)
         {
-            if (db.usuarios.Any(x => x.usuario1 == user.usuario1 && x.contrasena == user.contrasena))
-            {
-                user = db.usuarios.Where(x => x.usuario1 == user.usuario1 && x.contrasena == user.contrasena).FirstOrDefault();
-                return Ok(user);
-            }
-            else
-            {
-                return NotFound();
-            }
+            return Ok("Contraseña incorrecta.");
         }
 
-        // PUT: api/usuarios/5
-        [ResponseType(typeof(void))]
-        public IHttpActionResult Putusuario(int id, usuario usuario)
+        return Ok(login);
+    }
+
+    // PUT api/usuarios/{id}
+    [HttpPut]
+    [Route("{userId}")]
+    public async Task<IHttpActionResult> Put(int userId, [FromBody] Usuarios usuario)
+    {
+        if (usuario == null)
         {
-            var findUsuario = db.usuarios.Where(x => x.id == id).FirstOrDefault();
-
-            findUsuario.pic = usuario.pic;
-            findUsuario.nombre = usuario.nombre;
-            findUsuario.apellido = usuario.apellido;
-            findUsuario.usuario1 = usuario.usuario1;
-            findUsuario.contrasena = usuario.contrasena;
-
-
-            try
-            {
-                db.SaveChanges();
-            }
-
-
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!usuarioExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return Ok(findUsuario);
+            return BadRequest("Usuario no proporcionado.");
         }
 
-        [HttpPut]
-        [Route("api/usuariosPic/{id}")]
-        public IHttpActionResult PutPicUsuario(int id, usuario usuario)
+        var savedId = userId;
+        var filter = Builders<Usuarios>.Filter.Eq(u => u.userId, savedId);
+
+        var update = Builders<Usuarios>.Update
+            .Set(u => u.nombre, usuario.nombre)
+            .Set(u => u.apellido, usuario.apellido)
+            .Set(u => u.nombre_usuario, usuario.nombre_usuario)
+            .Set(u => u.contrasena, usuario.contrasena)
+            .Set(u => u.pic, usuario.pic);
+
+        var result = await _usuariosCollection.UpdateOneAsync(filter, update);
+
+        if (result.MatchedCount == 0)
         {
-            var findUsuario = db.usuarios.Where(x => x.id == id).FirstOrDefault();
-
-            findUsuario.pic = usuario.pic;;
-
-            try
-            {
-                db.SaveChanges();
-            }
-
-
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!usuarioExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return Ok(findUsuario);
+            return NotFound();
         }
 
-        // POST: api/usuarios
-        [ResponseType(typeof(usuario))]
-        public IHttpActionResult Postusuario(usuario usuario)
+        return Ok(usuario);
+    }
+
+    // PUT api/usuarios/usuariosPic/{id}
+    [HttpPut]
+    [Route("usuariosPic/{userId}")]
+    public async Task<IHttpActionResult> PutPic(int userId, [FromBody] Usuarios usuario)
+    {
+        var savedId = userId;
+        var filter = Builders<Usuarios>.Filter.Eq(u => u.userId, savedId);
+
+        var update = Builders<Usuarios>.Update
+            .Set(u => u.pic, usuario.pic);
+
+        var result = await _usuariosCollection.UpdateOneAsync(filter, update);
+
+        if (result.MatchedCount == 0)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            db.usuarios.Add(usuario);
-            db.SaveChanges();
-
-            return CreatedAtRoute("DefaultApi", new { id = usuario.id }, usuario);
+            return NotFound();
         }
 
-        // DELETE: api/usuarios/5
-        [ResponseType(typeof(usuario))]
-        public IHttpActionResult Deleteusuario(int id)
+        return Ok(usuario);
+    }
+
+
+    // DELETE api/historial/{id}
+    [HttpDelete]
+    [Route("{userId}")]
+    public async Task<IHttpActionResult> Delete(int userId)
+    {
+        var result = await _usuariosCollection.DeleteOneAsync(x => x.userId == userId);
+        if (result.IsAcknowledged && result.DeletedCount > 0)
         {
-            usuario usuario = db.usuarios.Find(id);
-            if (usuario == null)
-            {
-                return NotFound();
-            }
-
-            db.usuarios.Remove(usuario);
-            db.SaveChanges();
-
-            return Ok(usuario);
+            return Ok("Usuario eliminado.");
         }
-
-        protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                db.Dispose();
-            }
-            base.Dispose(disposing);
-        }
-
-        private bool usuarioExists(int id)
-        {
-            return db.usuarios.Count(e => e.id == id) > 0;
-        }
+        return BadRequest("Usuario inexistente.");
     }
 }
+
+

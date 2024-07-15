@@ -3,9 +3,11 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
+using System.Web.Http.Cors;
 
 namespace floratech.Controllers
 {
+    [EnableCors("*", "*", "*")]
     public class FruityviceController : ApiController
     {
         private static readonly string BaseUrl = "https://www.fruityvice.com/api/fruit/";

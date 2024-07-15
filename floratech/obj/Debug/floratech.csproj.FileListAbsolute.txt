@@ -204,3 +204,11 @@ C:\Users\Nicolle\Documents\GitHub\floratech-api\floratech\bin\Snappier.xml
 C:\Users\Nicolle\Documents\GitHub\floratech-api\floratech\bin\System.Security.AccessControl.xml
 C:\Users\Nicolle\Documents\GitHub\floratech-api\floratech\bin\System.Security.Principal.Windows.xml
 C:\Users\Nicolle\Documents\GitHub\floratech-api\floratech\bin\System.Text.Encoding.CodePages.xml
+C:\Users\Nicolle\Documents\GitHub\floratech-api\floratech\bin\System.Net.Http.Json.dll
+C:\Users\Nicolle\Documents\GitHub\floratech-api\floratech\bin\System.Text.Encodings.Web.dll
+C:\Users\Nicolle\Documents\GitHub\floratech-api\floratech\bin\System.Text.Json.dll
+C:\Users\Nicolle\Documents\GitHub\floratech-api\floratech\bin\System.ValueTuple.dll
+C:\Users\Nicolle\Documents\GitHub\floratech-api\floratech\bin\System.Net.Http.Json.xml
+C:\Users\Nicolle\Documents\GitHub\floratech-api\floratech\bin\System.Text.Encodings.Web.xml
+C:\Users\Nicolle\Documents\GitHub\floratech-api\floratech\bin\System.Text.Json.xml
+C:\Users\Nicolle\Documents\GitHub\floratech-api\floratech\bin\System.ValueTuple.xml
