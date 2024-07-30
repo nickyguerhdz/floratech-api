@@ -161,7 +161,7 @@ namespace floratech.Model
             apellido = "N/A";
             nombre_usuario = "N/A";
             contrasena = "N/A";
-            pic = "N/A";
+            pic = "mar";
         }
 
         [BsonId]
