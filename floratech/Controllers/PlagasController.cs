@@ -20,7 +20,7 @@ public class PlagasController : ApiController
         _plagasCollection = db_mongo.mongoDatabase.GetCollection<Plagas>("plagas");
     }
 
-    // GET api/plantas
+    // GET api/plagas
     [HttpGet]
     [Route("")]
     public async Task<IEnumerable<Plagas>> Get()
@@ -28,7 +28,7 @@ public class PlagasController : ApiController
         return await _plagasCollection.Find(new BsonDocument()).ToListAsync();
     }
 
-    // GET api/plantas/all
+    // GET api/plagas/all
     [HttpGet]
     [Route("all")]
     public async Task<IHttpActionResult> GetAllHistorial()
@@ -46,7 +46,7 @@ public class PlagasController : ApiController
         });
     }
 
-    // GET api/plantas/{pestId}
+    // GET api/plagas/{pestId}
     [HttpGet]
     [Route("{pestId}")]
     public async Task<IHttpActionResult> GetPlantaByPlantId(int pestId)

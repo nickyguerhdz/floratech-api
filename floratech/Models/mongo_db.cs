@@ -27,21 +27,6 @@ namespace floratech.Connection
             MongoClient = ConnectionClient(username, password, cluster);
             mongoDatabase = ClientDB(MongoClient, database_Name);
         }
-        public mongo_db(string username, string password, string database_Name, string cluster, bool ping)
-        {
-            if (ping) { 
-                MongoClient = ConnectionClient(username, password, cluster);
-                mongoDatabase = ClientDB(MongoClient, database_Name);
-                ClientPing(MongoClient, database_Name);
-            }
-            else
-            {
-                Console.BackgroundColor = ConsoleColor.Magenta;
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine($"Usuario: {username}\nContrasena: {password}\nCluster: {cluster}\nNombre de la Base de Datos: {database_Name}");
-            }
-            Console.ResetColor();
-        }
 
         public MongoClient MongoClient { get; set; }
 

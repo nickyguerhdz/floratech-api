@@ -114,7 +114,7 @@ public class UsuariosController : ApiController
         return Ok(login);
     }
 
-    // PUT api/usuarios/{id}
+    // PUT api/usuarios/{userId}
     [HttpPut]
     [Route("{userId}")]
     public async Task<IHttpActionResult> Put(int userId, [FromBody] Usuarios usuario)
@@ -144,7 +144,7 @@ public class UsuariosController : ApiController
         return Ok(usuario);
     }
 
-    // PUT api/usuarios/usuariosPic/{id}
+    // PUT api/usuarios/usuariosPic/{userId}
     [HttpPut]
     [Route("usuariosPic/{userId}")]
     public async Task<IHttpActionResult> PutPic(int userId, [FromBody] Usuarios usuario)
@@ -166,7 +166,7 @@ public class UsuariosController : ApiController
     }
 
 
-    // DELETE api/historial/{id}
+    // DELETE api/historial/{userId}
     [HttpDelete]
     [Route("{userId}")]
     public async Task<IHttpActionResult> Delete(int userId)

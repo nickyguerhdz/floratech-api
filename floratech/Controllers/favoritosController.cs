@@ -57,7 +57,7 @@ public class FavoritosController : ApiController
     // GET api/favoritos/{userId}
     [HttpGet]
     [Route("{userId}")]
-    public async Task<IHttpActionResult> GetHistorialByUserId(int userId)
+    public async Task<IHttpActionResult> GetFavoritosByUserId(int userId)
     {
         var favorito = await _favoritosCollection.Find(x => x.userId == userId).ToListAsync();
         if (favorito.Count == 0)
