@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Cors;
+using BCrypt.Net;
 
 [EnableCors("*", "*", "*")]
 [RoutePrefix("api/usuarios")]
@@ -80,6 +81,8 @@ public class UsuariosController : ApiController
 
         usuario.userId = await GetNextUserIdAsync();
 
+        usuario.contrasena = BCrypt.Net.BCrypt.HashPassword(usuario.contrasena);
+
         await _usuariosCollection.InsertOneAsync(usuario);
         return Ok(usuario);
     }
@@ -102,19 +105,19 @@ public class UsuariosController : ApiController
             return Ok("Usuario incorrecto.");
         }
 
-        var passwordFilter = Builders<Usuarios>.Filter.Eq(u => u.nombre_usuario, usuario.nombre_usuario) &
-                             Builders<Usuarios>.Filter.Eq(u => u.contrasena, usuario.contrasena);
-        var login = await _usuariosCollection.Find(passwordFilter).FirstOrDefaultAsync();
+        // Verificar la contraseña
+        bool isPasswordValid = BCrypt.Net.BCrypt.Verify(usuario.contrasena, user.contrasena);
 
-        if (login == null)
+        if (!isPasswordValid)
         {
             return Ok("Contraseña incorrecta.");
         }
 
-        return Ok(login);
+        return Ok(user);
     }
 
-    // PUT api/usuarios/{userId}
+
+    // PUT api/usuarios/{id}
     [HttpPut]
     [Route("{userId}")]
     public async Task<IHttpActionResult> Put(int userId, [FromBody] Usuarios usuario)
@@ -126,6 +129,24 @@ public class UsuariosController : ApiController
 
         var savedId = userId;
         var filter = Builders<Usuarios>.Filter.Eq(u => u.userId, savedId);
+
+        var userInDb = await _usuariosCollection.Find(filter).FirstOrDefaultAsync();
+        if (userInDb == null)
+        {
+            return NotFound();
+        }
+
+        // Verificar si la contraseña ha cambiado
+        if (!string.IsNullOrEmpty(usuario.contrasena) && usuario.contrasena != userInDb.contrasena)
+        {
+            // Encriptar la nueva contraseña
+            usuario.contrasena = BCrypt.Net.BCrypt.HashPassword(usuario.contrasena);
+        }
+        else
+        {
+            // Mantener la contraseña actual si no ha cambiado
+            usuario.contrasena = userInDb.contrasena;
+        }
 
         var update = Builders<Usuarios>.Update
             .Set(u => u.nombre, usuario.nombre)
@@ -144,7 +165,8 @@ public class UsuariosController : ApiController
         return Ok(usuario);
     }
 
-    // PUT api/usuarios/usuariosPic/{userId}
+
+    // PUT api/usuarios/usuariosPic/{id}
     [HttpPut]
     [Route("usuariosPic/{userId}")]
     public async Task<IHttpActionResult> PutPic(int userId, [FromBody] Usuarios usuario)
@@ -166,7 +188,7 @@ public class UsuariosController : ApiController
     }
 
 
-    // DELETE api/historial/{userId}
+    // DELETE api/historial/{id}
     [HttpDelete]
     [Route("{userId}")]
     public async Task<IHttpActionResult> Delete(int userId)
@@ -179,5 +201,4 @@ public class UsuariosController : ApiController
         return BadRequest("Usuario inexistente.");
     }
 }
-
 

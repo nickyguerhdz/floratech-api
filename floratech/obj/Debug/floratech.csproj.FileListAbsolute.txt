@@ -212,3 +212,5 @@ C:\Users\Nicolle\Documents\GitHub\floratech-api\floratech\bin\System.Net.Http.Js
 C:\Users\Nicolle\Documents\GitHub\floratech-api\floratech\bin\System.Text.Encodings.Web.xml
 C:\Users\Nicolle\Documents\GitHub\floratech-api\floratech\bin\System.Text.Json.xml
 C:\Users\Nicolle\Documents\GitHub\floratech-api\floratech\bin\System.ValueTuple.xml
+C:\Users\Nicolle\Documents\GitHub\floratech-api\floratech\bin\BCrypt.Net.dll
+C:\Users\Nicolle\Documents\GitHub\floratech-api\floratech\bin\BCrypt.Net.xml
